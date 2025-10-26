@@ -1,0 +1,29 @@
+[project]
+name = "tabular-sense"
+version = "0.1.0"
+description = "表格数据语义识别：理解结构化数据的语义信息"
+requires-python = ">=3.12"
+dependencies = [
+    "torch==2.9.0",
+    "tqdm==4.67.1",
+    "sentencepiece==0.2.1",
+    "numpy==2.3.4",
+    "faker==37.11.0",
+    "dbfread==2.0.7",
+    "pypinyin==0.55.0",
+    "tensorboard==2.20.0"
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
