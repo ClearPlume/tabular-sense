@@ -8,7 +8,6 @@
       <excludeFolder url="file://$MODULE_DIR$/models" />
       <excludeFolder url="file://$MODULE_DIR$/data/corpus" />
       <excludeFolder url="file://$MODULE_DIR$/data/samples" />
-      <excludeFolder url="file://$MODULE_DIR$/data/vocab" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
