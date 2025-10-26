@@ -76,6 +76,16 @@ phone_number|13812345678<sep>13998765432<sep>15012341234
 
 本项目使用 [uv](https://github.com/astral-sh/uv) 管理依赖。
 
+```bash
+uv sync
+```
+
+### 训练数据和样本生成
+
+```bash
+python scripts/sample_generator.py
+```
+
 ### 推理
 
 > ⚠️ 推理接口将在v1.0版本提供
