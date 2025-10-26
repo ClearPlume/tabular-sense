@@ -43,7 +43,7 @@ SEP_TOKEN = "<sep>"
 
 # 数据生成配置
 RAW_CORPUS_PER_TYPE = 150000  # 每种类型的原始数据量
-SAMPLES_PER_TYPE = 500  # 每种类型的样本数
+SAMPLES_PER_TYPE = 5000  # 每种类型的样本数
 RAW_CORPUS_PER_INPUT = 10  # 每个样本的数据数
 
 # 数据拆分比例
