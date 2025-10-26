@@ -1,4 +1,3 @@
-import os
 import random
 
 import sentencepiece as spm
@@ -19,14 +18,6 @@ if not samples_dir.exists():
 def train():
     sample_file = f"{samples_dir}/samples.txt"
 
-    if os.path.exists(sample_file):
-        os.remove(sample_file)
-
-    for file in samples_dir.iterdir():
-        with open(sample_file, "a", encoding="utf-8") as f:
-            f.write(file.read_text(encoding="utf-8"))
-            f.write("\n")
-
     # TODO `―匚`训练测试
     spm.SentencePieceTrainer.Train(
         input=sample_file,
@@ -35,7 +26,6 @@ def train():
         vocab_size=VOCAB_SIZE,
         # 我选择单字分词，是因为unigram并非基于语义的分词，实践之后，发现在地址、建筑名称之上，概率并非最佳选择——会把语义错误拆分，不如直接单字，让模型自己学习语义
         # 而这个项目的特性是，5000字符的样本，是一个列名加一个“|”加49个<sep>——而sep是保留token——加50个表格中的数据，理论上截断是完全可行的，只要不会截断到一个样本只剩一两个数据即可
-        # max_sentencepiece_length=1,
         max_sentence_length=8000,
         pad_id=PAD_TOKEN_ID,
         pad_piece=PAD_TOKEN,

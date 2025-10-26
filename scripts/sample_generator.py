@@ -1,3 +1,4 @@
+import os
 import random
 import shutil
 
@@ -104,6 +105,21 @@ def main():
             f.write("\n".join(samples))
 
         print(f"Wrote {len(samples)} samples to {sample_file}")
+
+    samples_dir = get_data_dir() / "samples"
+    sample_file = f"{samples_dir}/samples.txt"
+
+    print("Constructing samples file")
+    if os.path.exists(sample_file):
+        print(f"{sample_file} already exists, removing it")
+        os.remove(sample_file)
+
+    for file in samples_dir.iterdir():
+        with open(sample_file, "a", encoding="utf-8") as f:
+            f.write(file.read_text(encoding="utf-8"))
+            f.write("\n")
+
+    print("Samples written to {}".format(sample_file))
 
 
 if __name__ == '__main__':
