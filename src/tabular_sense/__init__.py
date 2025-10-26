@@ -1,6 +1,6 @@
 from importlib.metadata import version, PackageNotFoundError
 
-from interface import ColumnClassifier
+from .interface import ColumnClassifier
 
 try:
     __version__ = version("tabular-sense")
