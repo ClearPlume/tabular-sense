@@ -45,8 +45,7 @@ class ColumnDataset(Dataset):
     sample_file: Path
     tokenizer: Tokenizer
     config: Config
-
-    offsets: list[int] = []
+    offsets: list[int]
 
     def __init__(self, sample_file: Path, tokenizer: Tokenizer, config: Config):
         self.sample_file = sample_file
@@ -62,6 +61,8 @@ class ColumnDataset(Dataset):
             with open(cache_file, "rb") as cache:
                 self.offsets = pickle.load(cache)
             return
+        else:
+            self.offsets = []
 
         self.offsets.append(_file.tell())
         while _file.readline():
@@ -69,6 +70,7 @@ class ColumnDataset(Dataset):
         self.offsets.pop()
 
         cache_file.write_bytes(pickle.dumps(self.offsets))
+        _file.close()
 
     def __len__(self):
         return len(self.offsets)
@@ -96,5 +98,5 @@ class ColumnDataset(Dataset):
         val_size = int(total * VAL_RATIO)
         test_size = int(total * TEST_RATIO)
         train_size = total - val_size - test_size
-    
+
         return random_split(self, [train_size, val_size, test_size], Generator().manual_seed(RANDOM_SEED))
