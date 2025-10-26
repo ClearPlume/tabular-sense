@@ -5,6 +5,8 @@
 .claude/
 .venv/
 
+__pycache__/
+
 data/corpus/
 data/samples/
 
