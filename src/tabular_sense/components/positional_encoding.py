@@ -14,7 +14,7 @@ def positional_encoding(max_len: int, d_model: int):
     #         ...
     #  [0, 0, 0, ..., 0]]  <- 位置max_len-1
     #   ↑  ↑  ↑       ↑
-    #   0  1  2    d_model
+    #   0  1  2    d_model-1
     pos_e = torch.zeros(max_len, d_model)
     # [0, 1, 2, 3, ..., max_len-1]
     # [[0], [1], [2], [3], ..., [max_len-1]]
@@ -24,9 +24,9 @@ def positional_encoding(max_len: int, d_model: int):
     # 数学本质: 正弦函数的自变量
     div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
 
-    # 使用sin计算占位符，为0、2、4、6、d_model - 2维设置位置编码
+    # 使用sin计算占位符，为0、2、4、6、d_model-2 维设置位置编码
     pos_e[:, 0::2] = torch.sin(position * div_term)
-    # 使用cos计算占位符，为1、3、5、7、d_model - 1维设置位置编码
+    # 使用cos计算占位符，为1、3、5、7、d_model-1 维设置位置编码
     pos_e[:, 1::2] = torch.cos(position * div_term)
 
     # [[sin(0*f0), cos(0*f0), sin(0*f1), ..., cos(0*fn)]   <- 位置0
@@ -35,7 +35,7 @@ def positional_encoding(max_len: int, d_model: int):
     #                   ...
     #  [sin(n*f0), cos(n*f0), sin(n*f1), ..., cos(0*fn)]]  <- 位置max_len-1
     #     ↑          ↑          ↑               ↑
-    #     0          1          2            d_model
+    #     0          1          2            d_model-1
 
     # 这是绝对位置编码，无需学习
     # [[[sin(0*f0), cos(0*f0), sin(0*f1), ..., cos(0*fn)]    <- 位置0
@@ -44,5 +44,5 @@ def positional_encoding(max_len: int, d_model: int):
     #                    ...
     #   [sin(n*f0), cos(n*f0), sin(0*f1), ..., cos(n*fn)]]]  <- 位置max_len-1
     #      ↑          ↑          ↑               ↑
-    #      0          1          2            d_model
+    #      0          1          2            d_model-1
     return Parameter(pos_e.unsqueeze(0), requires_grad=False)
