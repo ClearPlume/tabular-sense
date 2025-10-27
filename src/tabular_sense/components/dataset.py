@@ -83,13 +83,17 @@ class ColumnDataset(Dataset):
         _file.close()
 
         types, column_name, data = sample.split("|", maxsplit=2)
+        # [seq_len]
         encoded = self.tokenizer.encode(f"{column_name}|{data}")
 
+        # [min(max_len, seq_len)]
         if len(encoded) > self.config.max_len:
             encoded = encoded[:self.config.max_len]
 
         return TokenizedColumnSample(
+            # [min(max_len, seq_len)]
             torch.tensor(encoded),
+            # [n_classes]
             torch.tensor(ColumnType.to_multiple_label(*map(ColumnType.__getitem__, types.split(",")))),
         )
 
