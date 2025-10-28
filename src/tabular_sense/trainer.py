@@ -115,18 +115,34 @@ class Trainer:
         elif resume_strategy == ResumeStrategy.EXCLUDE_OPTIMIZATION:
             self.dp_scheduler.load_state_dict(checkpoint["dp_scheduler_state"])
 
-            print(f"✓ 部分恢复：仅丢弃率调度器")
+            lr = checkpoint["optimizer_state"]["param_groups"][0]["lr"]
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = lr
+
+            print(f"✓ 部分恢复：丢弃率调度器 + checkpoint学习率")
             print(f"✗ 优化器和LR调度器使用新配置")
 
         elif resume_strategy == ResumeStrategy.EXCLUDE_REGULARIZATION:
             self.optimizer.load_state_dict(checkpoint["optimizer_state"])
             self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler_state"])
 
+            self.dp_scheduler.current_dropout = checkpoint["dp_scheduler_state"]["current_dropout"]
+            self.dp_scheduler.train_losses = checkpoint["dp_scheduler_state"]["train_losses"]
+            self.dp_scheduler.val_losses = checkpoint["dp_scheduler_state"]["val_losses"]
+
             print(f"✓ 部分恢复：优化器 + LR调度器")
-            print(f"✗ 丢弃率调度器使用新配置")
+            print(f"✗ 丢弃率调度器使用新配置，仅恢复checkpoint的dropout和历史loss")
 
         else:
-            print(f"✗ 仅加载权重，所有训练状态使用新配置")
+            lr = checkpoint["optimizer_state"]["param_groups"][0]["lr"]
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = lr
+
+            self.dp_scheduler.current_dropout = checkpoint["dp_scheduler_state"]["current_dropout"]
+            self.dp_scheduler.train_losses = checkpoint["dp_scheduler_state"]["train_losses"]
+            self.dp_scheduler.val_losses = checkpoint["dp_scheduler_state"]["val_losses"]
+
+            print(f"✗ 优化器、LR调度器使用新配置，仅恢复checkpoint的学习率和部分dropout状态")
 
         if not reset_training_state:
             self.best_score = checkpoint["best_score"]
