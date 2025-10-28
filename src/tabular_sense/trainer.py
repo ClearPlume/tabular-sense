@@ -156,6 +156,8 @@ class Trainer:
         print(f"    Epochs: {self.start_epoch} -> {self.epochs}")
         print(f"    模型架构: {self.config}")
         print(f"    参数规模: {self.model.param_num}")
+        print(f"    当前学习率: {self.lr_scheduler.get_last_lr()[0]:.2e}")
+        print(f"    当前Dropout: {self.dp_scheduler.current_dropout}")
         print(f"    最佳分数: {self.best_score}")
         print("=" * 60)
 
