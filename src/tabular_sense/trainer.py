@@ -138,11 +138,9 @@ class Trainer:
         print("=" * 60)
         print("🚀 开始训练")
         print(f"    Epochs: {self.start_epoch} -> {self.epochs}")
-        print(f"    学习率: {self.lr_scheduler.get_last_lr()[0]:.2e}")
-        print(f"    丢弃率: {self.dp_scheduler.current_dropout}")
-        print(f"    批次大小: {self.config.batch_size}")
-        print(f"    参数: {self.model.param_num}")
-        print(f"    设备: {self.config.device}")
+        print(f"    模型架构: {self.config}")
+        print(f"    参数规模: {self.model.param_num}")
+        print(f"    最佳分数: {self.best_score}")
         print("=" * 60)
 
         for epoch in range(self.start_epoch, self.epochs + 1):
