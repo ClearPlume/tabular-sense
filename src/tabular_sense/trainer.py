@@ -330,11 +330,11 @@ class Trainer:
         loss = self.criterion(logits, labels)
         return logits, loss, labels
 
-    def _is_best(self, metrics: Metrics, epoch: int, min_delta=0.001) -> bool:
+    def _is_best(self, metrics: Metrics, epoch: int) -> bool:
         """判断并更新最佳记录和早停计数"""
 
         improvement = metrics.score - self.best_score
-        if improvement > min_delta:
+        if improvement > self.config.min_delta:
             if self.early_stop_count > 0:
                 print(f"✔️ 早停计数重设 ({epoch})")
                 self.summary.add_text("EarlyStop", f"✔️ 早停计数重设 ({epoch})", epoch)

@@ -15,6 +15,7 @@ class Config:
     max_dropout: float
     batch_size: int
 
+    min_delta: float = 0.0001
     max_len: int = 512
     max_grad_norm: float = 1.0
     device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
