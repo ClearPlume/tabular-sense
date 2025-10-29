@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from src.tabular_sense.core.constants import ALL_TYPES
+from src.tabular_sense.core.constants import ALL_TYPES, N_CLASSES
 
 # TODO 为ALL_TYPES和ColumnType的一致性新增单测
 ColumnType = IntEnum("ColumnType", {name.upper(): idx for idx, name in enumerate(ALL_TYPES)})
@@ -9,7 +9,7 @@ ColumnType = IntEnum("ColumnType", {name.upper(): idx for idx, name in enumerate
 # noinspection PyTypeHints
 # 莫名其妙的警告
 def to_multiple_label(*types: ColumnType) -> list[int]:
-    vector = [0] * len(ALL_TYPES)
+    vector = [0] * N_CLASSES
     for t1 in types:
         vector[t1.value] = 1
     return vector

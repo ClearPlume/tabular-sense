@@ -67,6 +67,8 @@ SEED_TYPES: dict[str, Callable[[int], list[str]]] = {"address": addresses, "comp
 
 ALL_TYPES: list[str] = [*CORPUS_TYPES.keys(), *VARIANT_TYPES.keys(), *SEED_TYPES.keys()]
 
+N_CLASSES = len(ALL_TYPES)
+
 # 无意义的泛化列名（所有类型通用）
 GENERIC_COLUMN_NAMES: list[str] = [
     # 英文泛化模式

@@ -4,7 +4,7 @@ import sentencepiece as spm
 
 from scripts.d_model_calculator import d_model_calculator
 from src.tabular_sense.core.constants import PAD_TOKEN_ID, PAD_TOKEN, VOCAB_SIZE, SEP_TOKEN, RAW_CORPUS_PER_INPUT, \
-    ALL_TYPES, SAMPLES_PER_TYPE
+    SAMPLES_PER_TYPE, N_CLASSES
 from src.tabular_sense.path import get_data_dir
 
 data_dir = get_data_dir()
@@ -120,8 +120,12 @@ def verify() -> tuple[int, int]:
     return vocab_size, round(avg_length)
 
 
-if __name__ == "__main__":
+def main():
     # train()
     vocab_size, sample_len = verify()
-    d_model = d_model_calculator(2, 10, vocab_size, len(ALL_TYPES) * SAMPLES_PER_TYPE * sample_len)
+    d_model = d_model_calculator(2, 20, vocab_size, N_CLASSES * SAMPLES_PER_TYPE * sample_len)
     print(f"推荐维度：{d_model}")
+
+
+if __name__ == "__main__":
+    main()
