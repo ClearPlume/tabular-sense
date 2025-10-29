@@ -35,7 +35,7 @@ from scripts.variant_generators.time_generator import times
 
 RANDOM_SEED = 42
 
-VOCAB_SIZE = 50000
+VOCAB_SIZE = 20000
 
 PAD_TOKEN_ID = 3
 PAD_TOKEN = "<pad>"
