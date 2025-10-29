@@ -29,10 +29,10 @@ class LengthGroupSampler:
                 self.length_groups = pickle.load(cache)
             return
 
-        print("Sampler initialing")
+        print(f"Sampler[{dataset_type}] initialing")
         self.length_groups = self._group_by_length()
         cache_file.write_bytes(pickle.dumps(self.length_groups))
-        print("Sampler initialed")
+        print(f"Sampler[{dataset_type}] initialed")
 
     def _group_by_length(self) -> list[list[int]]:
         """按序列长度对样本分组"""
