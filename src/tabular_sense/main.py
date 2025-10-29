@@ -16,7 +16,7 @@ from src.tabular_sense.trainer import Trainer
 
 def main():
     data_dir = get_data_dir()
-    config = Config.small()
+    config = Config.micro()
     tokenizer = Tokenizer(str((data_dir / "vocab/tabular_sense.model")))
 
     dataset = ColumnDataset(data_dir / "samples/samples.txt", tokenizer, config)
@@ -52,14 +52,11 @@ def main():
         mode='min',
         factor=0.9,
         patience=3,
-        min_lr=1e-10,
-        threshold_mode="abs",
-        threshold=0.005,
     )
 
     dp_scheduler = DropoutScheduler(
         model.named_modules(),
-        0.4,
+        config.dropout,
         0.3,
         config.max_dropout,
         2,
@@ -74,10 +71,10 @@ def main():
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
         dp_scheduler=dp_scheduler,
-        train_name="2025-10-25",
+        train_name="2025-10-28_micro_large_sample",
     )
 
-    # trainer.load_checkpoint("2025-10-25", ResumeStrategy.EXCLUDE_REGULARIZATION)
+    trainer.load_checkpoint("2025-10-28_micro_large_sample", ResumeStrategy.EXCLUDE_OPTIMIZATION)
 
     trainer.train()
 
