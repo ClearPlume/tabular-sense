@@ -7,7 +7,6 @@ from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.dataset import ColumnDataset
 from src.tabular_sense.components.dropout_scheduler import DropoutScheduler
 from src.tabular_sense.components.model import Model
-from src.tabular_sense.components.resume_strategy import ResumeStrategy
 from src.tabular_sense.components.sampler import LengthGroupSampler
 from src.tabular_sense.components.tokenizer import Tokenizer
 from src.tabular_sense.path import get_data_dir
@@ -16,7 +15,7 @@ from src.tabular_sense.trainer import Trainer
 
 def main():
     data_dir = get_data_dir()
-    config = Config.micro()
+    config = Config.final()
     tokenizer = Tokenizer(str((data_dir / "vocab/tabular_sense.model")))
 
     dataset = ColumnDataset(data_dir / "samples/samples.txt", tokenizer, config)
@@ -71,10 +70,10 @@ def main():
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
         dp_scheduler=dp_scheduler,
-        train_name="2025-10-28_micro_large_sample",
+        train_name="2025-10-29",
     )
 
-    trainer.load_checkpoint("2025-10-28_micro_large_sample", ResumeStrategy.EXCLUDE_OPTIMIZATION)
+    # trainer.load_checkpoint("2025-10-29", ResumeStrategy.ALL_COMPONENTS)
 
     trainer.train()
 

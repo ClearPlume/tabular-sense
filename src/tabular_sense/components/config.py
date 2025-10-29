@@ -51,6 +51,11 @@ class Config:
         return Config(128, 2, 2, learning_rate, dropout, max_dropout, batch_size)
 
     @staticmethod
+    # 4.2M，对应960k样本
+    def final(learning_rate=5e-5, dropout=0.1, max_dropout=0.2, batch_size=128):
+        return Config(128, 2, 1, learning_rate, dropout, max_dropout, batch_size)
+
+    @staticmethod
     # 37.3M，对应16k样本
     def small(learning_rate=8e-5, dropout=0.2, max_dropout=0.4, batch_size=32):
         return Config(512, 8, 8, learning_rate, dropout, max_dropout, batch_size)
