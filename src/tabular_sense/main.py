@@ -37,7 +37,6 @@ def main():
     )
 
     model = Model(tokenizer, config)
-    model.to(config.device)
 
     optimizer = AdamW(
         model.parameters(),
