@@ -20,6 +20,24 @@ class Config:
     max_grad_norm: float = 1.0
     device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    def __init__(
+            self,
+            d_model: int,
+            n_head: int,
+            n_encoder_layers: int,
+            learning_rate: float,
+            dropout: float,
+            max_dropout: float,
+            batch_size: int,
+    ):
+        self.d_model = d_model
+        self.n_head = n_head
+        self.n_encoder_layers = n_encoder_layers
+        self.learning_rate = learning_rate
+        self.dropout = dropout
+        self.max_dropout = max_dropout
+        self.batch_size = batch_size
+
     def __str__(self):
         return (
             f"{self.d_model}d×{self.n_head}h×{self.n_encoder_layers}L | "
