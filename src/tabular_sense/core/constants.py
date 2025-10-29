@@ -65,7 +65,7 @@ SEED_TYPES: dict[str, Callable[[int], list[str]]] = {"address": addresses, "comp
                                                      "hospital": hospitals, "recreation": recreations,
                                                      "residential": residential, "shopping": shopping}
 
-ALL_TYPES: list[str] = [*CORPUS_TYPES, *VARIANT_TYPES.keys(), *SEED_TYPES.keys()]
+ALL_TYPES: list[str] = [*CORPUS_TYPES.keys(), *VARIANT_TYPES.keys(), *SEED_TYPES.keys()]
 
 # 无意义的泛化列名（所有类型通用）
 GENERIC_COLUMN_NAMES: list[str] = [
