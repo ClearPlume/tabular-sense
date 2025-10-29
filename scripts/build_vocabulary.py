@@ -2,7 +2,9 @@ import random
 
 import sentencepiece as spm
 
-from src.tabular_sense.core.constants import PAD_TOKEN_ID, PAD_TOKEN, VOCAB_SIZE, SEP_TOKEN, RAW_CORPUS_PER_INPUT
+from scripts.d_model_calculator import d_model_calculator
+from src.tabular_sense.core.constants import PAD_TOKEN_ID, PAD_TOKEN, VOCAB_SIZE, SEP_TOKEN, RAW_CORPUS_PER_INPUT, \
+    ALL_TYPES, SAMPLES_PER_TYPE
 from src.tabular_sense.path import get_data_dir
 
 data_dir = get_data_dir()
@@ -24,8 +26,7 @@ def train():
         model_prefix=f"{data_dir}/vocab/tabular_sense",
         model_type="unigram",
         vocab_size=VOCAB_SIZE,
-        # 我选择单字分词，是因为unigram并非基于语义的分词，实践之后，发现在地址、建筑名称之上，概率并非最佳选择——会把语义错误拆分，不如直接单字，让模型自己学习语义
-        # 而这个项目的特性是，5000字符的样本，是一个列名加一个“|”加49个<sep>——而sep是保留token——加50个表格中的数据，理论上截断是完全可行的，只要不会截断到一个样本只剩一两个数据即可
+        max_sentencepiece_length=256,
         max_sentence_length=8000,
         pad_id=PAD_TOKEN_ID,
         pad_piece=PAD_TOKEN,
@@ -40,7 +41,13 @@ def train():
     )
 
 
-def verify():
+def verify() -> tuple[int, int]:
+    """
+    Tokenizer分析
+    
+    :return: [vocab_size, avg_sample_length]
+    """
+
     tokenizer = spm.SentencePieceProcessor()
     tokenizer.Load(f"{data_dir}/vocab/tabular_sense.model")
 
@@ -110,7 +117,11 @@ def verify():
     elif vocab_usage > 95:
         print(f"⚠️  建议: 词表使用率过高 ({vocab_usage:.1f}%)，词表可能不够")
 
+    return vocab_size, round(avg_length)
+
 
 if __name__ == "__main__":
-    train()
-    verify()
+    # train()
+    vocab_size, sample_len = verify()
+    d_model = d_model_calculator(2, 10, vocab_size, len(ALL_TYPES) * SAMPLES_PER_TYPE * sample_len)
+    print(f"推荐维度：{d_model}")
