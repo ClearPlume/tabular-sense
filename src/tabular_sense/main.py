@@ -17,7 +17,7 @@ from src.tabular_sense.trainer import Trainer
 def main():
     data_dir = get_data_dir()
     config = Config.final()
-    tokenizer = Tokenizer(str((data_dir / "vocab/tabular_sense.model")))
+    tokenizer = Tokenizer()
 
     dataset = ColumnDataset(data_dir / "samples/samples.txt", tokenizer, config)
     train_dataset, val_dataset, _ = dataset.split()

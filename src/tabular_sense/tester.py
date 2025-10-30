@@ -26,7 +26,7 @@ def main():
     all_predictions: list[Tensor] = []
     all_labels: list[Tensor] = []
 
-    tokenizer, model, test_loader, config = initialize(name)
+    model, test_loader, config = initialize(name)
 
     logger.info("=" * 60)
     logger.info("🧪 开始测试")
@@ -69,14 +69,12 @@ def main():
     logger.info("=" * 60)
 
 
-def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset], Config]:
+def initialize(name: str) -> tuple[Model, DataLoader[ColumnDataset], Config]:
     config = Config.final()
-
-    tokenizer = Tokenizer(str(data_dir / "vocab/tabular_sense.model"))
+    tokenizer = Tokenizer()
 
     model = Model(tokenizer, config)
-    checkpoint = torch.load(model_dir / f"checkpoint/{name}/checkpoint_{name}_best.pt")
-    model.load_state_dict(checkpoint["model_state"])
+    model.load(name)
     model.eval()
 
     dataset = ColumnDataset(data_dir / "samples/samples.txt", tokenizer, config)
@@ -89,7 +87,7 @@ def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset], 
         pin_memory=True,
     )
 
-    return tokenizer, model, test_loader, config
+    return model, test_loader, config
 
 
 if __name__ == '__main__':
