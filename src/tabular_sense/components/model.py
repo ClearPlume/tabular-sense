@@ -7,6 +7,7 @@ from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.positional_encoding import positional_encoding
 from src.tabular_sense.components.tokenizer import Tokenizer
 from src.tabular_sense.core.constants import PAD_TOKEN_ID, ALL_TYPES
+from src.tabular_sense.path import get_models_dir
 
 
 class Model(Module):
@@ -112,3 +113,12 @@ class Model(Module):
     @property
     def param_num(self) -> str:
         return f"{sum(p.numel() for p in self.parameters()) / 1e6:.1f}M"
+
+    def load(self, checkpoint_name: str):
+        checkpoint_dir = get_models_dir() / f"checkpoint/{checkpoint_name}/checkpoint_{checkpoint_name}_best.pt"
+
+        if not checkpoint_dir.exists():
+            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_name}")
+
+        checkpoint = torch.load(checkpoint_dir)
+        self.load_state_dict(checkpoint["model_state"])
