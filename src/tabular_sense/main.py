@@ -7,6 +7,7 @@ from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.dataset import ColumnDataset
 from src.tabular_sense.components.dropout_scheduler import DropoutScheduler
 from src.tabular_sense.components.model import Model
+from src.tabular_sense.components.resume_strategy import ResumeStrategy
 from src.tabular_sense.components.sampler import LengthGroupSampler
 from src.tabular_sense.components.tokenizer import Tokenizer
 from src.tabular_sense.path import get_data_dir
@@ -69,10 +70,10 @@ def main():
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
         dp_scheduler=dp_scheduler,
-        train_name="2025-10-29",
+        train_name="2025-10-30",
     )
 
-    # trainer.load_checkpoint("2025-10-29", ResumeStrategy.ALL_COMPONENTS)
+    trainer.load_checkpoint("2025-10-30", ResumeStrategy.ALL_COMPONENTS)
 
     trainer.train()
 

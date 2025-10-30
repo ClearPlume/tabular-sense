@@ -18,7 +18,7 @@ from src.tabular_sense.path import get_data_dir, get_models_dir
 
 
 def main():
-    name = "2025-10-29"
+    name = "2025-10-30"
     logger = setup_logger(name, "test")
     metrics = MultiLabelMetrics()
     criterion = BCEWithLogitsLoss()
