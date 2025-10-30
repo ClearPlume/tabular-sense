@@ -19,8 +19,6 @@ class Model(Module):
     def __init__(self, tokenizer: Tokenizer, config: Config):
         super().__init__()
 
-        self.to(config.device)
-
         # 词嵌入，将词表中的每个token都映射到d_model维度的向量空间，初始值为随机浮点值
         # [[e0_0, e0_1, e0_2, ..., e0_{d_model-1}]  <- tokens[v0]
         #  [e1_0, e1_1, e1_2, ..., e1_{d_model-1}]  <- tokens[v1]
@@ -61,6 +59,8 @@ class Model(Module):
             # [batch, n_classes]
             Linear(config.d_model * 2, len(ALL_TYPES)),
         )
+
+        self.to(config.device)
 
     def forward(self, input_ids: Tensor, attention_masks: Tensor) -> Tensor:
         batch_size, seq_len = input_ids.shape
