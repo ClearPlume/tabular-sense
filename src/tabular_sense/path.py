@@ -12,21 +12,25 @@ def get_project_root() -> Path:
     raise FileNotFoundError("未找到项目根目录")
 
 
+@lru_cache(maxsize=1)
 def get_src_dir() -> Path:
     """获取src目录"""
     return get_project_root() / "src"
 
 
+@lru_cache(maxsize=1)
 def get_models_dir() -> Path:
     """获取models目录"""
     return get_project_root() / "models"
 
 
+@lru_cache(maxsize=1)
 def get_data_dir() -> Path:
     """获取data目录"""
     return get_project_root() / "data"
 
 
+@lru_cache(maxsize=1)
 def get_logs_dir() -> Path:
     """获取logs目录"""
     return get_project_root() / "logs"
