@@ -62,7 +62,7 @@ Tabular Sense 是一个基于小语言模型（SLM）的表格数据语义识别
   ↓
 Transformer Encoder
   ↓
-分类器（26类）
+分类器（32类）
   ↓
 输出: 语义类型标签
 ```
@@ -116,7 +116,7 @@ result = classifier.predict(
     column_name="phone",
     samples=["13812345678", "13998765432", "15012341234"],
 )
-print(result)  # ['手机号']
+print(result)  # ['PHONE']
 ```
 
 ## 技术架构
@@ -138,13 +138,13 @@ print(result)  # ['手机号']
 - [x] 中等规模训练（160K样本，5K/类）
 - [x] 大规模训练（960K样本，30K/类）← 生产级目标
 - [x] 测试集最终评估 ← 0.99733915
+- [x] 推理接口封装（ColumnClassifier）
 
 ### 进行中 🚧
 
-- [ ] 推理接口封装（ColumnClassifier）
+- [ ] 性能基准测试与优化
 
 ### 规划中 ⏳
 
-- [ ] 性能基准测试与优化
 - [ ] 交互式演示工具
 - [ ] 扩展到表级别语义理解
