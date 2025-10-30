@@ -17,13 +17,24 @@ from src.tabular_sense.path import get_data_dir, get_models_dir
 
 
 def main():
+    name = "2025-10-29"
     metrics = MultiLabelMetrics()
     criterion = BCEWithLogitsLoss()
     total_loss = 0
     all_predictions: list[Tensor] = []
     all_labels: list[Tensor] = []
 
-    tokenizer, model, test_loader = initialize("2025-10-29")
+    tokenizer, model, test_loader, config = initialize(name)
+
+    print("=" * 60)
+    print("🧪 开始测试")
+    print(f"    Checkpoint: {name}")
+    print(f"    模型架构: {config.d_model}d×{config.n_head}h×{config.n_encoder_layers}L")
+    print(f"    参数规模: {model.param_num}")
+    print(f"    测试样本: {len(test_loader) * config.batch_size}")
+    print(f"    批次大小: {config.batch_size}")
+    print("=" * 60)
+
     device = next(model.parameters()).device
     progress: tqdm[dict[str, Any]] = tqdm(test_loader, f"[Test]")
 
@@ -42,12 +53,21 @@ def main():
         all_labels.append(labels)
 
     avg_loss = total_loss / len(test_loader)
-    score = metrics(all_predictions, all_labels).score
+    result = metrics(all_predictions, all_labels)
 
-    print(f"loss: {avg_loss}, score: {score}")
+    print("=" * 60)
+    print("📊 测试结果")
+    print(f"    Loss: {avg_loss:.8f}")
+    print(f"    Score: {result.score:.8f}")
+    print(f"    F1: {result.f1:.8f}")
+    print(f"    Precision: {result.precision:.8f}")
+    print(f"    Recall: {result.recall:.8f}")
+    print(f"    Hamming Loss: {result.hamming_loss:.8f}")
+    print(f"    EM: {result.em:.8f}")
+    print("=" * 60)
 
 
-def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset]]:
+def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset], Config]:
     config = Config.final()
 
     tokenizer = Tokenizer(str(data_dir / "vocab/tabular_sense.model"))
@@ -67,7 +87,7 @@ def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset]]:
         pin_memory=True,
     )
 
-    return tokenizer, model, test_loader
+    return tokenizer, model, test_loader, config
 
 
 if __name__ == '__main__':
