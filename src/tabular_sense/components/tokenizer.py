@@ -2,12 +2,14 @@ import os
 
 from sentencepiece import SentencePieceProcessor
 
+from src.tabular_sense.path import get_data_dir
+
 
 class Tokenizer:
     """词表处理器"""
     tokenizer: SentencePieceProcessor
 
-    def __init__(self, vocab_file: str):
+    def __init__(self, vocab_file: str = str(get_data_dir() / "vocab/tabular_sense.model")):
         if os.path.exists(vocab_file):
             self.tokenizer = SentencePieceProcessor()
             self.tokenizer.Load(vocab_file)
