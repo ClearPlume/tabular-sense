@@ -1,3 +1,5 @@
+import time
+from logging import Logger
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +15,7 @@ from tqdm import tqdm
 
 from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.dropout_scheduler import DropoutScheduler
+from src.tabular_sense.components.logger import setup_logger
 from src.tabular_sense.components.metrics import Metrics
 from src.tabular_sense.components.metrics import MultiLabelMetrics
 from src.tabular_sense.components.model import Model
@@ -44,6 +47,7 @@ class Trainer:
     best_score: float
     best_epoch: int
     checkpoint_dir: Path
+    logger: Logger
 
     def __init__(
             self,
@@ -87,6 +91,8 @@ class Trainer:
         if not self.checkpoint_dir.exists():
             self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
+        self.logger = setup_logger(train_name, "train")
+
     def load_checkpoint(
             self,
             checkpoint_name: str,
@@ -95,7 +101,7 @@ class Trainer:
     ):
         """从存档点中恢复状态"""
 
-        print(f"▶ 尝试加载存档点: {checkpoint_name}")
+        self.logger.info(f"▶ 尝试加载存档点: {checkpoint_name}")
         checkpoint_path = self.checkpoint_dir / f"checkpoint_{checkpoint_name}_best.pt"
 
         if not checkpoint_path.exists():
@@ -104,14 +110,14 @@ class Trainer:
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
         self.model.load_state_dict(checkpoint["model_state"])
-        print("✓ 模型权重已加载")
+        self.logger.info("✓ 模型权重已加载")
 
         if resume_strategy == ResumeStrategy.ALL_COMPONENTS:
             self.optimizer.load_state_dict(checkpoint["optimizer_state"])
             self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler_state"])
             self.dp_scheduler.load_state_dict(checkpoint["dp_scheduler_state"])
 
-            print("✓ 完全恢复：优化器 + LR调度器 + 丢弃率调度器")
+            self.logger.info("✓ 完全恢复：优化器 + LR调度器 + 丢弃率调度器")
 
         elif resume_strategy == ResumeStrategy.EXCLUDE_OPTIMIZATION:
             self.dp_scheduler.load_state_dict(checkpoint["dp_scheduler_state"])
@@ -120,8 +126,8 @@ class Trainer:
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
 
-            print(f"✓ 部分恢复：丢弃率调度器 + checkpoint学习率")
-            print(f"✗ 优化器和LR调度器使用新配置")
+            self.logger.info(f"✓ 部分恢复：丢弃率调度器 + checkpoint学习率")
+            self.logger.info(f"✗ 优化器和LR调度器使用新配置")
 
         elif resume_strategy == ResumeStrategy.EXCLUDE_REGULARIZATION:
             self.optimizer.load_state_dict(checkpoint["optimizer_state"])
@@ -131,8 +137,8 @@ class Trainer:
             self.dp_scheduler.train_losses = checkpoint["dp_scheduler_state"]["train_losses"]
             self.dp_scheduler.val_losses = checkpoint["dp_scheduler_state"]["val_losses"]
 
-            print(f"✓ 部分恢复：优化器 + LR调度器")
-            print(f"✗ 丢弃率调度器使用新配置，仅恢复checkpoint的dropout和历史loss")
+            self.logger.info(f"✓ 部分恢复：优化器 + LR调度器")
+            self.logger.info(f"✗ 丢弃率调度器使用新配置，仅恢复checkpoint的dropout和历史loss")
 
         else:
             lr = checkpoint["optimizer_state"]["param_groups"][0]["lr"]
@@ -143,7 +149,7 @@ class Trainer:
             self.dp_scheduler.train_losses = checkpoint["dp_scheduler_state"]["train_losses"]
             self.dp_scheduler.val_losses = checkpoint["dp_scheduler_state"]["val_losses"]
 
-            print(f"✗ 优化器、LR调度器使用新配置，仅恢复checkpoint的学习率和部分dropout状态")
+            self.logger.info(f"✗ 优化器、LR调度器使用新配置，仅恢复checkpoint的学习率和部分dropout状态")
 
         if not reset_training_state:
             self.best_score = checkpoint["best_score"]
@@ -152,35 +158,43 @@ class Trainer:
             self.start_epoch = checkpoint["start_epoch"]
 
     def train(self):
-        print("=" * 60)
-        print("🚀 开始训练")
-        print(f"    Epochs: {self.start_epoch} -> {self.epochs}")
-        print(f"    模型架构: {self.config}")
-        print(f"    参数规模: {self.model.param_num}")
-        print(f"    样本规模: {SAMPLES_PER_TYPE * N_CLASSES}")
-        print(f"    当前学习率: {self.lr_scheduler.get_last_lr()[0]:.2e}")
-        print(f"    当前Dropout: {self.dp_scheduler.current_dropout}")
-        print(f"    最佳分数: {self.best_score}")
-        print("=" * 60)
+        self.logger.info("=" * 60)
+        self.logger.info("🚀 开始训练")
+        self.logger.info(f"    Epochs: {self.start_epoch} -> {self.epochs}")
+        self.logger.info(f"    模型架构: {self.config}")
+        self.logger.info(f"    参数规模: {self.model.param_num}")
+        self.logger.info(f"    样本规模: {SAMPLES_PER_TYPE * N_CLASSES}")
+        self.logger.info(f"    当前学习率: {self.lr_scheduler.get_last_lr()[0]:.2e}")
+        self.logger.info(f"    当前Dropout: {self.dp_scheduler.current_dropout}")
+        self.logger.info(f"    最佳分数: {self.best_score}")
+        self.logger.info("=" * 60)
+        
+        total_start = time.perf_counter()
 
         for epoch in range(self.start_epoch, self.epochs + 1):
+            epoch_start = time.perf_counter()
+
             train_loss = self.train_epoch(epoch)
             val_loss, metrics = self.validate_epoch(epoch)
 
-            print(f"⏭️ Epoch {epoch}/{self.epochs}")
-            print(f"    Train loss: {train_loss:.8f}")
-            print(f"    Val loss: {val_loss:.8f}")
-            print(f"    Score: {metrics.score:.8f}")
-            print(f"    F1: {metrics.f1:.8f}")
-            print(f"    LR: {self.lr_scheduler.get_last_lr()[0]:.2e}")
-            print(f"    DP: {self.dp_scheduler.current_dropout}")
+            epoch_time = time.perf_counter() - epoch_start
+            minutes, seconds = divmod(int(epoch_time), 60)
+
+            self.logger.info(f"⏭️ Epoch {epoch}/{self.epochs}")
+            self.logger.info(f"    Train loss: {train_loss:.8f}")
+            self.logger.info(f"    Val loss: {val_loss:.8f}")
+            self.logger.info(f"    Score: {metrics.score:.8f}")
+            self.logger.info(f"    F1: {metrics.f1:.8f}")
+            self.logger.info(f"    LR: {self.lr_scheduler.get_last_lr()[0]:.2e}")
+            self.logger.info(f"    DP: {self.dp_scheduler.current_dropout}")
+            self.logger.info(f"    Time: {minutes}m {seconds}s")
 
             old_lr = self.lr_scheduler.get_last_lr()[0]
             self.lr_scheduler.step(val_loss)
             new_lr = self.lr_scheduler.get_last_lr()[0]
 
             if old_lr != new_lr:
-                print(f"🔄 学习率调整 ({epoch}): {old_lr:.2e} -> {new_lr:.2e}")
+                self.logger.info(f"🔄 学习率调整 ({epoch}): {old_lr:.2e} -> {new_lr:.2e}")
                 self.summary.add_text("Hyperparams", f"🔄 学习率调整 ({epoch}): {old_lr:.2e} -> {new_lr:.2e}", epoch)
 
             old_dp = self.dp_scheduler.current_dropout
@@ -189,8 +203,8 @@ class Trainer:
             if old_dp != new_dp:
                 self.early_stop_count = 0
 
-                print(f"⚠️ 检测到过拟合趋势 ({epoch})")
-                print(f"🔄 Epoch {epoch}: Dropout {old_dp:.3f} → {new_dp:.3f}, 早停计数重置")
+                self.logger.info(f"⚠️ 检测到过拟合趋势 ({epoch})")
+                self.logger.info(f"🔄 Epoch {epoch}: Dropout {old_dp:.3f} → {new_dp:.3f}, 早停计数重置")
 
                 self.summary.add_text(
                     "Hyperparams",
@@ -214,7 +228,7 @@ class Trainer:
             self.summary.add_scalar("Hyperparams/DP", self.dp_scheduler.current_dropout, epoch)
 
             if self._is_best(metrics, epoch):
-                print(f"✨ 新的最佳模型 (Epoch {self.best_epoch}, Score={metrics.score:.8f})")
+                self.logger.info(f"✨ 新的最佳模型 (Epoch {self.best_epoch}, Score={metrics.score:.8f})")
                 self.summary.add_text(
                     "BestModel",
                     f"✨ 新的最佳模型 (Epoch {self.best_epoch}, Score={metrics.score:.8f})",
@@ -240,8 +254,8 @@ class Trainer:
             }, epoch)
 
             if self.early_stop_count >= self.early_stop_patience:
-                print(f"🚨 早停触发: 连续 {self.early_stop_patience} 个epoch无提升")
-                print(f"    最佳模型: Epoch {self.best_epoch}, Score={self.best_score:.8f}")
+                self.logger.info(f"🚨 早停触发: 连续 {self.early_stop_patience} 个epoch无提升")
+                self.logger.info(f"    最佳模型: Epoch {self.best_epoch}, Score={self.best_score:.8f}")
                 self.summary.add_text(
                     "EarlyStop",
                     f"🚨 早停触发: 连续 {self.early_stop_patience} 个epoch无提升\n    最佳模型: Epoch {self.best_epoch}, Score={self.best_score:.8f}",
@@ -250,9 +264,14 @@ class Trainer:
                 break
 
         self.summary.close()
-        print("=" * 60)
-        print("✅ 训练完成")
-        print(f"    最佳分数: {self.best_score:.8f} (Epoch {self.best_epoch})")
+        self.logger.info("=" * 60)
+        
+        total_time = time.perf_counter() - total_start
+        hours, rem = divmod(total_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        
+        self.logger.info(f"✅ 训练完成，总时长: {hours}h {minutes}m {seconds}s")
+        self.logger.info(f"    最佳分数: {self.best_score:.8f} (Epoch {self.best_epoch})")
 
     def train_epoch(self, epoch: int) -> float:
         self.model.train()
@@ -338,7 +357,7 @@ class Trainer:
         improvement = metrics.score - self.best_score
         if improvement > self.config.min_delta:
             if self.early_stop_count > 0:
-                print(f"✔️ 早停计数重设 ({epoch})")
+                self.logger.info(f"✔️ 早停计数重设 ({epoch})")
                 self.summary.add_text("EarlyStop", f"✔️ 早停计数重设 ({epoch})", epoch)
 
             self.best_score = metrics.score
@@ -356,7 +375,7 @@ class Trainer:
             else:
                 symbol = "🚨"
 
-            print(f"{symbol} 接近早停阈值 ({self.early_stop_count}/{self.early_stop_patience})")
+            self.logger.info(f"{symbol} 接近早停阈值 ({self.early_stop_count}/{self.early_stop_patience})")
             self.summary.add_text(
                 "EarlyStop",
                 f"{symbol} 接近早停阈值 ({self.early_stop_count}/{self.early_stop_patience})",

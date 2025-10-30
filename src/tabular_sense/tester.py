@@ -9,6 +9,7 @@ from tqdm import tqdm
 from src.tabular_sense.components.collate import collate_fn
 from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.dataset import ColumnDataset
+from src.tabular_sense.components.logger import setup_logger
 from src.tabular_sense.components.metrics import MultiLabelMetrics
 from src.tabular_sense.components.model import Model
 from src.tabular_sense.components.sampler import LengthGroupSampler
@@ -18,6 +19,7 @@ from src.tabular_sense.path import get_data_dir, get_models_dir
 
 def main():
     name = "2025-10-29"
+    logger = setup_logger(name, "test")
     metrics = MultiLabelMetrics()
     criterion = BCEWithLogitsLoss()
     total_loss = 0
@@ -26,14 +28,14 @@ def main():
 
     tokenizer, model, test_loader, config = initialize(name)
 
-    print("=" * 60)
-    print("🧪 开始测试")
-    print(f"    Checkpoint: {name}")
-    print(f"    模型架构: {config.d_model}d×{config.n_head}h×{config.n_encoder_layers}L")
-    print(f"    参数规模: {model.param_num}")
-    print(f"    测试样本: {len(test_loader) * config.batch_size}")
-    print(f"    批次大小: {config.batch_size}")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("🧪 开始测试")
+    logger.info(f"    Checkpoint: {name}")
+    logger.info(f"    模型架构: {config.d_model}d×{config.n_head}h×{config.n_encoder_layers}L")
+    logger.info(f"    参数规模: {model.param_num}")
+    logger.info(f"    测试样本: {len(test_loader) * config.batch_size}")
+    logger.info(f"    批次大小: {config.batch_size}")
+    logger.info("=" * 60)
 
     device = next(model.parameters()).device
     progress: tqdm[dict[str, Any]] = tqdm(test_loader, f"[Test]")
@@ -55,16 +57,16 @@ def main():
     avg_loss = total_loss / len(test_loader)
     result = metrics(all_predictions, all_labels)
 
-    print("=" * 60)
-    print("📊 测试结果")
-    print(f"    Loss: {avg_loss:.8f}")
-    print(f"    Score: {result.score:.8f}")
-    print(f"    F1: {result.f1:.8f}")
-    print(f"    Precision: {result.precision:.8f}")
-    print(f"    Recall: {result.recall:.8f}")
-    print(f"    Hamming Loss: {result.hamming_loss:.8f}")
-    print(f"    EM: {result.em:.8f}")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("📊 测试结果")
+    logger.info(f"    Loss: {avg_loss:.8f}")
+    logger.info(f"    Score: {result.score:.8f}")
+    logger.info(f"    F1: {result.f1:.8f}")
+    logger.info(f"    Precision: {result.precision:.8f}")
+    logger.info(f"    Recall: {result.recall:.8f}")
+    logger.info(f"    Hamming Loss: {result.hamming_loss:.8f}")
+    logger.info(f"    EM: {result.em:.8f}")
+    logger.info("=" * 60)
 
 
 def initialize(name: str) -> tuple[Tokenizer, Model, DataLoader[ColumnDataset], Config]:
