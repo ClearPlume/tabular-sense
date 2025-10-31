@@ -2,11 +2,11 @@ import torch
 from torch import Tensor
 from torch.nn.functional import pad
 
-from src.tabular_sense.components.dataset import TokenizedColumnSample
+from src.tabular_sense.components.dataset import TokenizedColumnSample, BatchedColumnSample
 from src.tabular_sense.core.constants import PAD_TOKEN_ID
 
 
-def collate_fn(batch: list[TokenizedColumnSample]) -> dict[str, Tensor]:
+def collate_fn(batch: list[TokenizedColumnSample]) -> BatchedColumnSample:
     """完成分组后批次内数据的padding"""
 
     # [seq_len] * batch
@@ -30,12 +30,12 @@ def collate_fn(batch: list[TokenizedColumnSample]) -> dict[str, Tensor]:
         padded_inputs.append(padded)
         attention_masks.append(mask)
 
-    return {
+    return BatchedColumnSample(
         # [batch, max_input_len]
-        "input_ids": torch.stack(padded_inputs),
+        input_ids=torch.stack(padded_inputs),
         # [batch, max_input_len]
-        "attention_masks": torch.stack(attention_masks),
+        attention_masks=torch.stack(attention_masks),
         # [batch, n_classes]
         # loss计算需要标准类型为float
-        "labels": torch.stack(labels).float(),
-    }
+        labels=torch.stack(labels).float(),
+    )

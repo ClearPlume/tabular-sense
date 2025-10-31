@@ -39,6 +39,22 @@ class TokenizedColumnSample:
     target: Tensor
 
 
+@dataclass
+class BatchedColumnSample:
+    """
+    分组后，批次内数据padding之后的结构
+    
+    Attributes:
+        input_ids: [batch, max_input_len]
+        attention_masks: [batch, max_input_len]
+        labels: [batch, n_classes]
+    """
+
+    input_ids: Tensor
+    attention_masks: Tensor
+    labels: Tensor
+
+
 class ColumnDataset(Dataset):
     """列数据集"""
 

@@ -1,7 +1,6 @@
 import time
 from logging import Logger
 from pathlib import Path
-from typing import Any
 
 import torch
 from torch import Tensor
@@ -14,6 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from src.tabular_sense.components.config import Config
+from src.tabular_sense.components.dataset import BatchedColumnSample
 from src.tabular_sense.components.dropout_scheduler import DropoutScheduler
 from src.tabular_sense.components.logger import setup_logger
 from src.tabular_sense.components.metrics import Metrics
@@ -168,7 +168,7 @@ class Trainer:
         self.logger.info(f"    当前Dropout: {self.dp_scheduler.current_dropout}")
         self.logger.info(f"    最佳分数: {self.best_score}")
         self.logger.info("=" * 60)
-        
+
         total_start = time.perf_counter()
 
         for epoch in range(self.start_epoch, self.epochs + 1):
@@ -265,18 +265,18 @@ class Trainer:
 
         self.summary.close()
         self.logger.info("=" * 60)
-        
+
         total_time = time.perf_counter() - total_start
         hours, rem = divmod(total_time, 3600)
         minutes, seconds = divmod(rem, 60)
-        
+
         self.logger.info(f"✅ 训练完成，总时长: {hours}h {minutes}m {seconds}s")
         self.logger.info(f"    最佳分数: {self.best_score:.8f} (Epoch {self.best_epoch})")
 
     def train_epoch(self, epoch: int) -> float:
         self.model.train()
         total_loss = 0.0
-        progress: tqdm[dict[str, Any]] = tqdm(self.train_loader, f"Epoch {epoch}/{self.epochs} [Train]")
+        progress: tqdm[BatchedColumnSample] = tqdm(self.train_loader, f"Epoch {epoch}/{self.epochs} [Train]")
 
         for idx, batch in enumerate(progress):
             logits, loss, labels = self._predict(batch)
@@ -311,7 +311,7 @@ class Trainer:
         total_loss = 0.0
         all_predictions: list[Tensor] = []
         all_labels: list[Tensor] = []
-        progress: tqdm[dict[str, Any]] = tqdm(self.val_loader, f"Epoch {epoch}/{self.epochs} [Val]")
+        progress: tqdm[BatchedColumnSample] = tqdm(self.val_loader, f"Epoch {epoch}/{self.epochs} [Val]")
 
         for batch in progress:
             logits, loss, labels = self._predict(batch)
@@ -336,16 +336,16 @@ class Trainer:
         })
         return avg_loss, self.metrics(all_predictions, all_labels)
 
-    def _predict(self, batch: dict[str, Any]) -> tuple[Tensor, Tensor, Tensor]:
+    def _predict(self, batch: BatchedColumnSample) -> tuple[Tensor, Tensor, Tensor]:
         """
         模型预测
         
         :return tuple[logits, loss, labels]
         """
 
-        input_ids = batch["input_ids"].to(self.config.device)
-        attention_masks = batch["attention_masks"].to(self.config.device)
-        labels = batch["labels"].to(self.config.device)
+        input_ids = batch.input_ids.to(self.config.device)
+        attention_masks = batch.attention_masks.to(self.config.device)
+        labels = batch.labels.to(self.config.device)
 
         logits = self.model(input_ids, attention_masks)
         loss = self.criterion(logits, labels)
