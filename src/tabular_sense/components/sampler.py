@@ -83,15 +83,12 @@ class LengthGroupSampler:
 
         # 为每个长度组创建批次
         for indices in self.length_groups:
-            # 打乱同组内样本
-            random.shuffle(indices)
+            # 处理 drop_last 逻辑
+            if len(indices) < self.batch_size and self.drop_last:
+                continue
 
-            # 创建批次
-            for idx in range(0, len(indices), self.batch_size):
-                batch = indices[idx: idx + self.batch_size]
+            random.shuffle(indices)  # 组内随机
+            batches.append(indices)
 
-                if len(batch) == self.batch_size or not self.drop_last:
-                    batches.append(batch)
-
-        random.shuffle(batches)
+        random.shuffle(batches)  # 批次间随机
         return iter(batches)
