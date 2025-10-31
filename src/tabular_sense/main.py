@@ -37,7 +37,7 @@ def main():
         pin_memory=True,
     )
 
-    model = Model(tokenizer, config)
+    model = Model(tokenizer.vocab_size, config)
 
     optimizer = AdamW(
         model.parameters(),

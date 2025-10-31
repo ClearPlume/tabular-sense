@@ -5,7 +5,6 @@ from torch.nn.parameter import Parameter
 
 from src.tabular_sense.components.config import Config
 from src.tabular_sense.components.positional_encoding import positional_encoding
-from src.tabular_sense.components.tokenizer import Tokenizer
 from src.tabular_sense.core.constants import PAD_TOKEN_ID, ALL_TYPES
 from src.tabular_sense.path import get_models_dir
 
@@ -17,7 +16,7 @@ class Model(Module):
     encoder: TransformerEncoder
     classifier: Sequential
 
-    def __init__(self, tokenizer: Tokenizer, config: Config):
+    def __init__(self, vocab_size: int, config: Config):
         super().__init__()
 
         # 词嵌入，将词表中的每个token都映射到d_model维度的向量空间，初始值为随机浮点值
@@ -27,7 +26,7 @@ class Model(Module):
         #                     ...
         #  [eN_0, eN_1, eN_2, ..., eN_{d_model-1}]] <- tokens[v_{vocab_size-1}]
         # [vocab_size, d_model]
-        self.embedding = Embedding(tokenizer.vocab_size, config.d_model, PAD_TOKEN_ID)
+        self.embedding = Embedding(vocab_size, config.d_model, PAD_TOKEN_ID)
         # [CLS]分类参数，用于序列分类任务的全局表示，初始值为随机浮点值
         # [[[c_0, c_1, c_2, ..., c_{d_model-1}]]]
         # [1, 1, d_model]
