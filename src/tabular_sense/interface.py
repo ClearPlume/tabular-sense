@@ -30,7 +30,7 @@ class ColumnClassifier:
 
         config = Config.final()
         self.tokenizer = Tokenizer()
-        self.model = Model(self.tokenizer, config)
+        self.model = Model(self.tokenizer.vocab_size, config)
         self.model.load(checkpoint_name)
         self.device = config.device
 
