@@ -73,7 +73,7 @@ def initialize(name: str) -> tuple[Model, DataLoader[ColumnDataset], Config]:
     config = Config.final()
     tokenizer = Tokenizer()
 
-    model = Model(tokenizer, config)
+    model = Model(tokenizer.vocab_size, config)
     model.load(name)
     model.eval()
 
