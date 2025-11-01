@@ -123,7 +123,7 @@ def verify() -> tuple[int, float]:
 def main():
     # train()
     vocab_size, sample_len = verify()
-    d_model = d_model_calculator(1, 50, vocab_size, N_CLASSES * SAMPLES_PER_TYPE * sample_len)
+    d_model = d_model_calculator(vocab_size, N_CLASSES * SAMPLES_PER_TYPE * sample_len, 30, 1)
     print(f"推荐维度：{d_model}")
 
 
