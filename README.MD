@@ -147,3 +147,10 @@ print(result)  # ['PHONE']
 ### 规划中 ⏳
 
 - [ ] 扩展到表级别语义理解
+
+## 相关博客
+
+- [心潮涌链：它真的懂我说的话吗？](https://fallingangel.net/archives/xin-chao-yong-lian-ta-zhen-de-dong-wo-shuo-de-hua-ma) -
+  LLM推理链路完整梳理
+- [数语觅类："nl是什么？27是年龄吗？"](https://fallingangel.net/archives/shu-yu-mi-lei-nlshi-shi-me-27shi-nian-ling-ma) -
+  SLM表格数据语义识别从0到1的实现历程
