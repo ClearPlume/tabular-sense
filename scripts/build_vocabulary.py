@@ -41,7 +41,7 @@ def train():
     )
 
 
-def verify() -> tuple[int, int]:
+def verify() -> tuple[int, float]:
     """
     Tokenizer分析
     
@@ -51,7 +51,7 @@ def verify() -> tuple[int, int]:
     tokenizer = spm.SentencePieceProcessor()
     tokenizer.Load(f"{data_dir}/vocab/tabular_sense.model")
 
-    samples_per_type = 500
+    samples_per_type = 3000
     test_cases = []
 
     print("loading test cases...")
@@ -117,7 +117,7 @@ def verify() -> tuple[int, int]:
     elif vocab_usage > 95:
         print(f"⚠️  建议: 词表使用率过高 ({vocab_usage:.1f}%)，词表可能不够")
 
-    return vocab_size, round(avg_length)
+    return vocab_size, avg_length
 
 
 def main():
